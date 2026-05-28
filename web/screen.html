@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speaking_Hearts - Subtitle Screen</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #display-area {
+            width: 80%;
+            min-height: 200px;
+            border: 2px solid #444;
+            padding: 20px;
+            font-size: 2rem;
+            text-align: center;
+            background-color: #000;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        select {
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+        }
+        .timestamp {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label for="lang-select">Choose Language:</label>
+        <select id="lang-select">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="ru">Русский</option>
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+            <option value="zh">中文</option>
+        </select>
+        <button id="connect-btn">Connect</button>
+    </div>
+
+    <div id="display-area">
+        Select a language and connect to start receiving subtitles...
+    </div>
+
+    <script src="js/websocket.js"></script>
+</body>
+</html>
