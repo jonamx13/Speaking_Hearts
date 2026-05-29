@@ -60,9 +60,13 @@ func main() {
 	// Start Mock Microphone (Acquisition Layer)
 	mock.StartMockMic(audioChan)
 
-	// Start Mock STT (Processing Layer)
-	// We wire STT directly to the manager's broadcast channel for now.
-	stt.StartMockSTT(audioChan, manager.Broadcast)
+	// Initialize the STT Engine (Whisper Skeleton)
+	whisper := stt.NewWhisperEngine("models/whisper-base")
+
+	// Start the STT Worker Pool (Processing Layer)
+	// We use 3 workers to handle concurrent transcription tasks.
+	sttPool := stt.NewWorkerPool(3, audioChan, manager.Broadcast, whisper)
+	sttPool.Start()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(manager, w, r)
