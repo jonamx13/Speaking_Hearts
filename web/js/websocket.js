@@ -22,8 +22,17 @@ function connect() {
     socket.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
+            console.log('Raw JSON from Go:', data);
+            const selectedLang = langSelect.value;
+            
+            // Determine which text to display: specific translation or original text
+            let textToDisplay = data.original_text;
+            if (data.translations && data.translations[selectedLang]) {
+                textToDisplay = data.translations[selectedLang];
+            }
+
             displayArea.innerHTML = `
-                <div>${data.text}</div>
+                <div>${textToDisplay}</div>
                 <div class="timestamp">${data.timestamp} - Speaker: ${data.speaker_id}</div>
             `;
         } catch (e) {

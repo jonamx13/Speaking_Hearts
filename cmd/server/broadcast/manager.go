@@ -55,24 +55,20 @@ func (m *Manager) Run() {
 			// Broadcast the processed text to all clients.
 			// Each client receives only the translation for their PreferredLang.
 			for client := range m.Clients {
-				// Prepare the message payload specifically for this client.
+				// Prepare the message payload with original text and all available translations.
+				// This allows the frontend to switch languages dynamically.
 				payload := struct {
 					OriginalChunkID string            `json:"original_chunk_id"`
 					SpeakerID       string            `json:"speaker_id"`
-					Text            string            `json:"text"`
+					OriginalText    string            `json:"original_text"`
+					Translations    map[string]string `json:"translations"`
 					Timestamp       string            `json:"timestamp"`
 				}{
 					OriginalChunkID: processedText.OriginalChunkID,
 					SpeakerID:       processedText.SpeakerID,
+					OriginalText:    processedText.OriginalText,
+					Translations:    processedText.Translations,
 					Timestamp:       processedText.Timestamp.Format("15:04:05"),
-				}
-
-				// Check if a translation for the client's preferred language exists.
-				// If not, default to the original text.
-				if translation, exists := processedText.Translations[client.PreferredLang]; exists {
-					payload.Text = translation
-				} else {
-					payload.Text = processedText.OriginalText
 				}
 
 				// Serialize to JSON and send.

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"speaking_hearts/cmd/server/broadcast"
 	"speaking_hearts/cmd/server/stt"
+	"speaking_hearts/cmd/server/translate"
 	"speaking_hearts/models"
 	"speaking_hearts/test/mock"
 	"time"
@@ -56,6 +57,7 @@ func main() {
 
 	// Initialize channels for the processing pipeline
 	audioChan := make(chan models.AudioChunk, 100)
+	textChan := make(chan models.ProcessedText, 100)
 
 	// Start Mock Microphone (Acquisition Layer)
 	mock.StartMockMic(audioChan)
@@ -64,9 +66,24 @@ func main() {
 	whisper := stt.NewWhisperEngine("models/whisper-base")
 
 	// Start the STT Worker Pool (Processing Layer)
-	// We use 3 workers to handle concurrent transcription tasks.
-	sttPool := stt.NewWorkerPool(3, audioChan, manager.Broadcast, whisper)
+	sttPool := stt.NewWorkerPool(3, audioChan, textChan, whisper)
 	sttPool.Start()
+
+	// Initialize the Translation Service and Router (Processing Layer)
+	nllb := translate.NewTranslatorService("models/nllb/distilled-600M")
+	// For simulation, we always translate Spanish input to English, Russian, and German.
+	router := translate.NewLanguageRouter(nllb, []string{"en", "ru", "de"})
+
+	// Wire the STT output to the Translation Router
+	go func() {
+		log.Println("Translation Router started")
+		for processedText := range textChan {
+			// Apply translation rules
+			router.RouteProcess(&processedText)
+			// Forward the fully processed text (original + translations) to the Broadcast Manager
+			manager.Broadcast <- processedText
+		}
+	}()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(manager, w, r)
