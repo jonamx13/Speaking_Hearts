@@ -9,10 +9,10 @@
 *.dylib
 
 # AI Models (Ignore heavy weights but allow folder structure)
-# We ignore everything inside models/ but exclude .gitkeep files
-/models/*
-!/models/**/
-!/models/**/.gitkeep
+models/**/*.bin
+models/**/*.json
+models/**/*.safetensors
+!models/**/.gitkeep
 
 # Temporary data and recordings
 /chunks/
