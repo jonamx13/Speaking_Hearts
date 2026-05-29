@@ -9,16 +9,16 @@ import (
 // and orchestrating the translation process.
 type LanguageRouter struct {
 	Translator Translator
-	// Rules defines the list of languages that should always be translated.
+	// Rules defines the list of language routing rules.
 	// In a more dynamic system, this would be updated based on active clients.
-	Rules []string
+	Rules []models.RoutingRule
 }
 
 // NewLanguageRouter creates a new instance of the LanguageRouter.
-func NewLanguageRouter(translator Translator, languages []string) *LanguageRouter {
+func NewLanguageRouter(translator Translator, rules []models.RoutingRule) *LanguageRouter {
 	return &LanguageRouter{
 		Translator: translator,
-		Rules:      languages,
+		Rules:      rules,
 	}
 }
 
@@ -29,7 +29,14 @@ func (r *LanguageRouter) RouteProcess(p *models.ProcessedText) {
 		p.Translations = make(map[string]string)
 	}
 
-	for _, targetLang := range r.Rules {
+	for _, rule := range r.Rules {
+		// Apply rule only if it matches the original language
+		if rule.SourceLang != "" && rule.SourceLang != p.OriginalLang {
+			continue
+		}
+
+		targetLang := rule.TargetLang
+
 		// Skip if it's the same as the original language
 		if targetLang == p.OriginalLang {
 			continue

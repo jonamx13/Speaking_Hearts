@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"speaking_hearts/cmd/server/broadcast"
+	"speaking_hearts/cmd/server/config"
 	"speaking_hearts/cmd/server/stt"
 	"speaking_hearts/cmd/server/translate"
 	"speaking_hearts/models"
@@ -71,8 +72,10 @@ func main() {
 
 	// Initialize the Translation Service and Router (Processing Layer)
 	nllb := translate.NewTranslatorService("models/nllb/distilled-600M")
-	// For simulation, we always translate Spanish input to English, Russian, and German.
-	router := translate.NewLanguageRouter(nllb, []string{"en", "ru", "de"})
+	
+	// Load routing rules from configuration
+	rules := config.GetDefaultRoutingRules()
+	router := translate.NewLanguageRouter(nllb, rules)
 
 	// Wire the STT output to the Translation Router
 	go func() {
