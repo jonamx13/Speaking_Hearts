@@ -1,0 +1,35 @@
+# Speaking_Hearts Git Ignore
+
+# Binaries and build artifacts
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# AI Models (Ignore heavy weights but allow folder structure)
+# We ignore everything inside models/ but exclude .gitkeep files
+/models/*
+!/models/**/
+!/models/**/.gitkeep
+
+# Temporary data and recordings
+/chunks/
+/storage/
+*.wav
+*.mp3
+*.tmp
+
+# Environment and secrets
+.env
+.env.local
+
+# IDE and System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Go specific
+go.work
