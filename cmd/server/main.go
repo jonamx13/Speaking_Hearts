@@ -4,7 +4,9 @@ import (
 	"log"
 	"net/http"
 	"speaking_hearts/cmd/server/broadcast"
+	"speaking_hearts/cmd/server/stt"
 	"speaking_hearts/models"
+	"speaking_hearts/test/mock"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,36 +54,15 @@ func main() {
 	manager := broadcast.NewManager()
 	go manager.Run()
 
-	// Simulated Text Ticker
-	go func() {
-		ticker := time.NewTicker(5 * time.Second)
-		defer ticker.Stop()
-		
-		counter := 0
-		for {
-			<-ticker.C
-			counter++
-			
-			msg := models.ProcessedText{
-				OriginalChunkID: uuid.New().String(),
-				SpeakerID:       "System_Sim",
-				OriginalLang:    "en",
-				OriginalText:    "This is a simulated broadcast message.",
-				Translations: map[string]string{
-					"es": "Este es un mensaje de difusión simulado.",
-					"ru": "Это симулированное широковещательное сообщение.",
-					"de": "Dies ist eine simulierte Broadcast-Nachricht.",
-					"fr": "Ceci est un message de diffusion simulé.",
-					"zh": "这是一个模拟的广播消息。",
-					"en": "This is a simulated broadcast message.",
-				},
-				Timestamp: time.Now(),
-			}
-			
-			log.Printf("Simulating broadcast #%d", counter)
-			manager.Broadcast <- msg
-		}
-	}()
+	// Initialize channels for the processing pipeline
+	audioChan := make(chan models.AudioChunk, 100)
+
+	// Start Mock Microphone (Acquisition Layer)
+	mock.StartMockMic(audioChan)
+
+	// Start Mock STT (Processing Layer)
+	// We wire STT directly to the manager's broadcast channel for now.
+	stt.StartMockSTT(audioChan, manager.Broadcast)
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(manager, w, r)
