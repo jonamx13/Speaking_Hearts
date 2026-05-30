@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"log"
 	"os"
@@ -10,8 +11,12 @@ import (
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+//go:embed all:frontend
+var assets embed.FS
 
 // App struct defines the application state and backend-to-frontend bindings.
 type App struct {
@@ -89,6 +94,9 @@ func main() {
 		Title:  "Speaking Hearts - Post-Event Toolset",
 		Width:  1024,
 		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
 		Bind: []interface{}{
 			app,
 		},
