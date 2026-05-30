@@ -28,7 +28,7 @@ function connect() {
             // Determine which text to display: specific translation or original text
             let textToDisplay = data.original_text;
             if (data.translations && data.translations[selectedLang]) {
-                textToDisplay = data.translations[selectedLang];
+                textToDisplay = data.translations[selectedLang].text;
             }
 
             displayArea.innerHTML = `

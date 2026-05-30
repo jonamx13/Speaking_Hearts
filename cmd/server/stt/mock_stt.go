@@ -21,7 +21,7 @@ func StartMockSTT(audioChan <-chan models.AudioChunk, textChan chan<- models.Pro
 				SpeakerID:       "Mock_Speaker_1",
 				OriginalLang:    chunk.LangIn,
 				OriginalText:    "Hola, esta es una prueba de audio", // Simulated Spanish STT output
-				Translations:    make(map[string]string),
+				Translations:    make(map[string]models.Translation),
 				Timestamp:       time.Now(),
 			}
 

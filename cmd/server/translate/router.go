@@ -26,7 +26,7 @@ func NewLanguageRouter(translator Translator, rules []models.RoutingRule) *Langu
 // This function implements the routing logic specified in Phase 3.
 func (r *LanguageRouter) RouteProcess(p *models.ProcessedText) {
 	if p.Translations == nil {
-		p.Translations = make(map[string]string)
+		p.Translations = make(map[string]models.Translation)
 	}
 
 	for _, rule := range r.Rules {
@@ -55,6 +55,8 @@ func (r *LanguageRouter) RouteProcess(p *models.ProcessedText) {
 		}
 
 		// Update the struct's translation map
-		p.Translations[targetLang] = translatedText
+		p.Translations[targetLang] = models.Translation{
+			Text: translatedText,
+		}
 	}
 }

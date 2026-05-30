@@ -74,7 +74,7 @@ func (p *WorkerPool) worker(id int) {
 				SpeakerID:       "Worker_" + string(rune(48+id)),
 				OriginalLang:    chunk.LangIn,
 				OriginalText:    text,
-				Translations:    make(map[string]string),
+				Translations:    make(map[string]models.Translation),
 				Timestamp:       time.Now(),
 			}
 

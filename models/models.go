@@ -14,14 +14,20 @@ type AudioChunk struct {
 	LangIn     string    `json:"lang_in"`
 }
 
-// ProcessedText represents the result of STT and translation processes.
+// Translation represents a translated text and its corresponding synthetic audio.
+type Translation struct {
+	Text  string `json:"text"`
+	Audio []byte `json:"audio,omitempty"`
+}
+
+// ProcessedText represents the result of STT, translation, and TTS processes.
 type ProcessedText struct {
-	OriginalChunkID string            `json:"original_chunk_id"`
-	SpeakerID       string            `json:"speaker_id"`
-	OriginalLang    string            `json:"original_lang"`
-	OriginalText    string            `json:"original_text"`
-	Translations    map[string]string `json:"translations"`
-	Timestamp       time.Time         `json:"timestamp"`
+	OriginalChunkID string                 `json:"original_chunk_id"`
+	SpeakerID       string                 `json:"speaker_id"`
+	OriginalLang    string                 `json:"original_lang"`
+	OriginalText    string                 `json:"original_text"`
+	Translations    map[string]Translation `json:"translations"`
+	Timestamp       time.Time              `json:"timestamp"`
 }
 
 // RoutingRule represents a configuration rule for translations.

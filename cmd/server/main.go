@@ -7,6 +7,7 @@ import (
 	"speaking_hearts/cmd/server/config"
 	"speaking_hearts/cmd/server/stt"
 	"speaking_hearts/cmd/server/translate"
+	"speaking_hearts/cmd/server/tts"
 	"speaking_hearts/models"
 	"speaking_hearts/test/mock"
 	"time"
@@ -59,6 +60,7 @@ func main() {
 	// Initialize channels for the processing pipeline
 	audioChan := make(chan models.AudioChunk, 100)
 	textChan := make(chan models.ProcessedText, 100)
+	ttsChan := make(chan models.ProcessedText, 100)
 
 	// Start Mock Microphone (Acquisition Layer)
 	mock.StartMockMic(audioChan)
@@ -83,10 +85,15 @@ func main() {
 		for processedText := range textChan {
 			// Apply translation rules
 			router.RouteProcess(&processedText)
-			// Forward the fully processed text (original + translations) to the Broadcast Manager
-			manager.Broadcast <- processedText
+			// Forward to TTS pipeline
+			ttsChan <- processedText
 		}
 	}()
+
+	// Initialize the TTS Engine and Worker Pool (Processing Layer)
+	ttsEngine := tts.NewMockEngine()
+	ttsPool := tts.NewWorkerPool(2, ttsChan, manager.Broadcast, ttsEngine)
+	ttsPool.Start()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(manager, w, r)
