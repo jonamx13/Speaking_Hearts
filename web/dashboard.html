@@ -3,9 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speaking_Hearts Dashboard</title>
+    <title>Speaking_Hearts - Operator Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-priest: #f39c12;
+            --accent-groom: #3498db;
+            --accent-bride: #e74c3c;
+            --success-color: #2ecc71;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            color: #888;
+        }
+
+        .dashboard-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 400px;
+            text-align: center;
+        }
+
+        .status-panel {
+            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #252525;
+            border: 1px solid #333;
+        }
+
+        #active-speaker {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--success-color);
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ptt-button {
+            padding: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .ptt-button:active {
+            transform: scale(0.98);
+        }
+
+        .ptt-button:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-priest { background-color: var(--accent-priest); }
+        .btn-groom { background-color: var(--accent-groom); }
+        .btn-bride { background-color: var(--accent-bride); }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
-    <h1>Speaking_Hearts - Hello Hallo Privet</h1>
+    <h1>Speaking_Hearts - Operator Panel</h1>
+
+    <div class="dashboard-container">
+        <div class="status-panel">
+            Current Active Speaker:<br>
+            <span id="active-speaker">NONE (Idle)</span>
+        </div>
+
+        <div class="button-group">
+            <button class="ptt-button btn-priest" onclick="triggerButton('priest', 'es', 'Priest (Spanish)')">
+                Priest (Spanish)
+            </button>
+            <button class="ptt-button btn-groom" onclick="triggerButton('groom', 'ru', 'Groom (Russian)')">
+                Groom (Russian)
+            </button>
+            <button class="ptt-button btn-bride" onclick="triggerButton('bride', 'en', 'Bride (English)')">
+                Bride (English)
+            </button>
+        </div>
+
+        <div class="footer">
+            Simulating hardware signals for dynamic routing.
+        </div>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('active-speaker');
+
+        async function triggerButton(id, lang, label) {
+            const event = {
+                device_id: id,
+                action: "press",
+                lang_requested: lang
+            };
+
+            try {
+                const response = await fetch('/api/button', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(event)
+                });
+
+                if (response.ok) {
+                    statusEl.innerText = label;
+                    statusEl.style.color = getComputedStyle(document.querySelector('.btn-' + id)).backgroundColor;
+                    console.log(`Event sent: ${label} is now active.`);
+                } else {
+                    console.error('Failed to send button event');
+                    statusEl.innerText = "Error: Connection Failed";
+                    statusEl.style.color = "red";
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusEl.innerText = "Error: Server Offline";
+                statusEl.style.color = "red";
+            }
+        }
+    </script>
 </body>
 </html>

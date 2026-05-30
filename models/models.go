@@ -37,3 +37,10 @@ type RoutingRule struct {
 	TargetLang string `json:"target_lang"`
 	Active     bool   `json:"active"`
 }
+
+// ButtonEvent represents a hardware event from a PTT button or similar device.
+type ButtonEvent struct {
+	DeviceID      string `json:"device_id"`
+	Action        string `json:"action"` // "press" or "release"
+	LangRequested string `json:"lang_requested"`
+}

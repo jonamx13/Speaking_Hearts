@@ -3,6 +3,7 @@ package translate
 import (
 	"log"
 	"speaking_hearts/models"
+	"sync"
 )
 
 // LanguageRouter handles the logic of determining which translations are needed
@@ -12,6 +13,7 @@ type LanguageRouter struct {
 	// Rules defines the list of language routing rules.
 	// In a more dynamic system, this would be updated based on active clients.
 	Rules []models.RoutingRule
+	mu    sync.RWMutex
 }
 
 // NewLanguageRouter creates a new instance of the LanguageRouter.
@@ -22,9 +24,19 @@ func NewLanguageRouter(translator Translator, rules []models.RoutingRule) *Langu
 	}
 }
 
+// SetRules updates the routing rules in a thread-safe manner.
+func (r *LanguageRouter) SetRules(rules []models.RoutingRule) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.Rules = rules
+}
+
 // RouteProcess populates the Translations map in ProcessedText by calling the Translator.
 // This function implements the routing logic specified in Phase 3.
 func (r *LanguageRouter) RouteProcess(p *models.ProcessedText) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	if p.Translations == nil {
 		p.Translations = make(map[string]models.Translation)
 	}
