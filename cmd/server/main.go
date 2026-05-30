@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"speaking_hearts/cmd/server/broadcast"
 	"speaking_hearts/cmd/server/buttons"
 	"speaking_hearts/cmd/server/config"
+	"speaking_hearts/cmd/server/storage"
 	"speaking_hearts/cmd/server/stt"
 	"speaking_hearts/cmd/server/translate"
 	"speaking_hearts/cmd/server/tts"
@@ -56,23 +58,61 @@ func serveWs(manager *broadcast.Manager, w http.ResponseWriter, r *http.Request)
 }
 
 func main() {
+	// Ensure storage directories exist
+	dirs := []string{"./storage/primary", "./storage/backup"}
+	for _, d := range dirs {
+		if err := os.MkdirAll(d, 0755); err != nil {
+			log.Fatalf("Critical: Could not initialize storage directory %s: %v", d, err)
+		}
+	}
+
 	manager := broadcast.NewManager()
 	go manager.Run()
 
-	// Initialize channels for the processing pipeline
-	audioChan := make(chan models.AudioChunk, 100)
+	// Initialize channels for the processing pipeline (Fan-Out Pattern)
+	micChan := make(chan models.AudioChunk, 100)
+	sttChan := make(chan models.AudioChunk, 100)
+	storageChan := make(chan models.AudioChunk, 100)
 	textChan := make(chan models.ProcessedText, 100)
 	ttsChan := make(chan models.ProcessedText, 100)
 
 	// Start Mock Microphone (Acquisition Layer)
-	mockMic := mock.NewMockMic(audioChan)
+	mockMic := mock.NewMockMic(micChan)
 	mockMic.Start()
+
+	// Fan-Out: Distribute the microphone stream to multiple concurrent consumers
+	go func() {
+		log.Println("Pipeline Fan-Out started")
+		for chunk := range micChan {
+			// Send copy to STT processing
+			select {
+			case sttChan <- chunk:
+			default:
+				log.Println("Warning: STT channel full, dropping chunk")
+			}
+
+			// Send copy to Fragment Recorder
+			select {
+			case storageChan <- chunk:
+			default:
+				log.Println("Warning: Storage channel full, dropping chunk")
+			}
+		}
+	}()
+
+	// Initialize the Storage Layer (Recorder)
+	dualWriter := &storage.DualWriter{
+		PrimaryPath:   "./storage/primary",
+		SecondaryPath: "./storage/backup",
+	}
+	recorder := storage.NewFragmentRecorder(dualWriter, 30*time.Second)
+	go recorder.Run(storageChan)
 
 	// Initialize the STT Engine (Whisper Skeleton)
 	whisper := stt.NewWhisperEngine("models/whisper-base")
 
 	// Start the STT Worker Pool (Processing Layer)
-	sttPool := stt.NewWorkerPool(3, audioChan, textChan, whisper)
+	sttPool := stt.NewWorkerPool(3, sttChan, textChan, whisper)
 	sttPool.Start()
 
 	// Initialize the Translation Service and Router (Processing Layer)
