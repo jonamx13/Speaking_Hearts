@@ -7,6 +7,7 @@
 *.dll
 *.so
 *.dylib
+/cmd/posttool/build/
 
 # AI Models (Ignore heavy weights but allow folder structure)
 models/**/*.bin
