@@ -9,8 +9,8 @@ import (
 // for dynamic, admin-controlled setups in the future.
 func GetDefaultRoutingRules() []models.RoutingRule {
 	return []models.RoutingRule{
-		{SourceLang: "es", TargetLang: "en"},
-		{SourceLang: "es", TargetLang: "ru"},
-		{SourceLang: "es", TargetLang: "de"},
+		{SourceLang: "es", TargetLang: "en", Active: true},
+		{SourceLang: "es", TargetLang: "ru", Active: true},
+		{SourceLang: "es", TargetLang: "de", Active: true},
 	}
 }

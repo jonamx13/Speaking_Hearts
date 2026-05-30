@@ -30,6 +30,11 @@ func (r *LanguageRouter) RouteProcess(p *models.ProcessedText) {
 	}
 
 	for _, rule := range r.Rules {
+		// Skip if the rule is not active
+		if !rule.Active {
+			continue
+		}
+
 		// Apply rule only if it matches the original language
 		if rule.SourceLang != "" && rule.SourceLang != p.OriginalLang {
 			continue

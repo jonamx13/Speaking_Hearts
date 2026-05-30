@@ -23,3 +23,11 @@ type ProcessedText struct {
 	Translations    map[string]string `json:"translations"`
 	Timestamp       time.Time         `json:"timestamp"`
 }
+
+// RoutingRule represents a configuration rule for translations.
+// It maps an incoming source language to an expected target language.
+type RoutingRule struct {
+	SourceLang string `json:"source_lang"`
+	TargetLang string `json:"target_lang"`
+	Active     bool   `json:"active"`
+}
