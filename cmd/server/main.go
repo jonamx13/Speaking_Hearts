@@ -75,27 +75,36 @@ func main() {
 	storageChan := make(chan models.AudioChunk, 100)
 	textChan := make(chan models.ProcessedText, 100)
 	ttsChan := make(chan models.ProcessedText, 100)
+	recorderTextChan := make(chan models.ProcessedText, 100)
+	broadcastChan := make(chan models.ProcessedText, 100)
 
 	// Start Mock Microphone (Acquisition Layer)
 	mockMic := mock.NewMockMic(micChan)
 	mockMic.Start()
 
-	// Fan-Out: Distribute the microphone stream to multiple concurrent consumers
+	// Audio Fan-Out: Distribute the microphone stream
 	go func() {
-		log.Println("Pipeline Fan-Out started")
 		for chunk := range micChan {
-			// Send copy to STT processing
 			select {
 			case sttChan <- chunk:
 			default:
-				log.Println("Warning: STT channel full, dropping chunk")
 			}
-
-			// Send copy to Fragment Recorder
 			select {
 			case storageChan <- chunk:
 			default:
-				log.Println("Warning: Storage channel full, dropping chunk")
+			}
+		}
+	}()
+
+	// Text Fan-Out: Distribute fully processed data to Broadcast and Recording
+	go func() {
+		for msg := range broadcastChan {
+			// Send to WebSocket Manager
+			manager.Broadcast <- msg
+			// Send to Recorder
+			select {
+			case recorderTextChan <- msg:
+			default:
 			}
 		}
 	}()
@@ -106,7 +115,7 @@ func main() {
 		SecondaryPath: "./storage/backup",
 	}
 	recorder := storage.NewFragmentRecorder(dualWriter, 30*time.Second)
-	go recorder.Run(storageChan)
+	go recorder.Run(storageChan, recorderTextChan)
 
 	// Initialize the STT Engine (Whisper Skeleton)
 	whisper := stt.NewWhisperEngine("models/whisper-base")
@@ -139,7 +148,7 @@ func main() {
 
 	// Initialize the TTS Engine and Worker Pool (Processing Layer)
 	ttsEngine := tts.NewMockEngine()
-	ttsPool := tts.NewWorkerPool(2, ttsChan, manager.Broadcast, ttsEngine)
+	ttsPool := tts.NewWorkerPool(2, ttsChan, broadcastChan, ttsEngine)
 	ttsPool.Start()
 
 	// Hardware Simulation API (PTT Buttons)
