@@ -1,0 +1,14 @@
+{
+  "name": "SpeakingHeartsPostTool",
+  "assetdir": "frontend",
+  "author": {
+    "name": "Speaking Hearts Team",
+    "email": ""
+  },
+  "info": {
+    "productName": "Speaking Hearts Post-Event Tool",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright 2026",
+    "comments": "Offline ceremonial subtitle rebuilder."
+  }
+}

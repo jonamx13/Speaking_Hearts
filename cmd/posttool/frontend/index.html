@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speaking Hearts Post-Event Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #result {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #aaaaaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Speaking Hearts Post-Event Tool</h1>
+        <p>Select the ceremony storage folder to reconstruct subtitles.</p>
+        <button id="process-btn" onclick="processFolder()">Select Folder & Rebuild</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function processFolder() {
+            const resultEl = document.getElementById('result');
+            resultEl.innerText = "Processing...";
+            
+            // Wails will automatically bind the 'SelectFolderAndProcess' method here
+            window.go.main.App.SelectFolderAndProcess().then((result) => {
+                resultEl.innerText = result;
+            }).catch((err) => {
+                resultEl.innerText = "Error: " + err;
+            });
+        }
+    </script>
+</body>
+</html>
